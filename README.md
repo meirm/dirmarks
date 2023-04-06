@@ -1,15 +1,15 @@
-= Dirmarks
+# Dirmarks
 Dirmarks is a directory bookmarking tool that allows you to easily manage, navigate, and switch between directories using bookmarks. This tool can save you time and make working with the command line more efficient.
 
 
-== Installation
+## Installation
 Install the Markdirs package using pip:
 
 ```
 pip install dirmarks
 ```
 
-== Shell Function Setup
+## Shell Function Setup
 To enable the dir command for changing directories using bookmarks, add the following shell function to your .profile, .bashrc, or .zshrc file, depending on your shell:
 
 ```
@@ -61,7 +61,7 @@ Or add a file .functions in your home directory and source it in .bashrc
 
 echo "source ~/.functions" >> ~/.bashrc
 
-== Setup dirmarks for all users 
+## Setup dirmarks for all users 
 ```
 mkdir -p /etc/bash.functions 
 cp data/marks.function /etc/bsh.fucntions
@@ -74,7 +74,7 @@ if [ -d /etc/bash.functions ]; then
 fi
 ```
 
-== Usage:
+## Usage:
 ```
 dir -h   ------------------ prints this help
 dir -l	------------------ list marks
@@ -87,7 +87,7 @@ dir -m <name> ------------- add mark for PWD
 dir -p <name> ------------- prints mark
 ```
 
-== Usage example
+## Usage example
 ```
 majam@dirose:~$ gm -l
 0 => meirm:/net/xen/mnt/sdb1/meirm
