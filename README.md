@@ -58,14 +58,18 @@ esac
 
 Or add a file .functions in your home directory and source it in .bashrc
 
-
+```
 echo "source ~/.functions" >> ~/.bashrc
-
+```
 ## Setup dirmarks for all users 
+
 ```
 mkdir -p /etc/bash.functions 
 cp data/marks.function /etc/bsh.fucntions
-Append the following line in /etc/bash.bashrc
+```
+
+### Append the following line in /etc/bash.bashrc
+
 ```
 if [ -d /etc/bash.functions ]; then
         for i in /etc/bash.functions/*;do 
@@ -75,6 +79,7 @@ fi
 ```
 
 ## Usage:
+
 ```
 dir -h   ------------------ prints this help
 dir -l	------------------ list marks
@@ -88,6 +93,7 @@ dir -p <name> ------------- prints mark
 ```
 
 ## Usage example
+
 ```
 majam@dirose:~$ gm -l
 0 => meirm:/net/xen/mnt/sdb1/meirm
