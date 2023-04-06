@@ -83,8 +83,8 @@ fi
 ```
 dir -h   ------------------ prints this help
 dir -l	------------------ list marks
-dir <[0-9]+> -------------- gm to mark[x] where is x is the index
-dir <name> ---------------- gm to mark where key=<shortname>
+dir <[0-9]+> -------------- dir to mark[x] where is x is the index
+dir <name> ---------------- dir to mark where key=<shortname>
 dir -a <name> <path> ------ add new mark
 dir -d <name>|[0-9]+ ------ delete mark
 dir -u <name> <path> ------ update mark
@@ -95,19 +95,19 @@ dir -p <name> ------------- prints mark
 ## Usage example
 
 ```
-majam@dirose:~$ gm -l
+majam@dirose:~$ dir -l
 0 => meirm:/net/xen/mnt/sdb1/meirm
 1 => edonkey:/net/xen/mnt/sdb1/majam/aMule/Incoming
 2 => init:/etc/init.d
 3 => majam:/net/xen/mnt/sdb1/majam
 
-majam@gmose:~$ gm 1
-majam@gmose:/net/xen/mnt/sdb1/majam/aMule/Incoming$ 
+majam@dirose:~$ dir 1
+majam@dirose:/net/xen/mnt/sdb1/majam/aMule/Incoming$ 
 
-majam@gmose:/etc/init.d$ gm majam
-majam@gmose:/net/xen/mnt/sdb1/majam$ 
+majam@dirose:/etc/init.d$ dir majam
+majam@dirose:/net/xen/mnt/sdb1/majam$ 
 
-majam@gmose:~$ gm -d 2
-majam@gmose:~$
+majam@dirose:~$ dir -d 2
+majam@dirose:~$
 ```
 
