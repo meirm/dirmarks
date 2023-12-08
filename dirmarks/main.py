@@ -3,6 +3,8 @@ from dirmarks import DATA_PATH
 import os
 import sys
 import fileinput
+import subprocess
+
 
 class Marks:
     def __init__(self):
@@ -22,12 +24,13 @@ class Marks:
                         self.marks[key] = value
 
     def add_mark(self, key, path):
-        if not os.path.isdir(os.path.abspath(path)):
+        abs_path = os.path.abspath(path)
+        if not os.path.isdir(abs_path):
             return
         if self.get_mark(key):
             return
         with open(self.rc, "a") as file:
-            file.write(f"{key}:{os.path.abspath(path)}\n")
+            file.write(f"{key}:{abs_path}\n")
 
     def del_mark(self, key):
         path = None
@@ -89,14 +92,101 @@ class Marks:
         else:
             return self.list[key].split(":")[1]
 
-    def update_mark(self,key, mark):
+    def update_mark(self,key, path):
         if self.del_mark(key):
             self.add_mark(key,path)
 
 
+def get_current_shell():
+    shell = os.environ.get('SHELL', '')
+    if 'bash' in shell:
+        return 'Bash'
+    elif 'zsh' in shell:
+        return 'Zsh'
+    else:
+        return 'Unknown'
+    
+def check_dir_function_exists():
+    try:
+        # Try to get the definition of the 'dir' function
+        shell = get_current_shell()
+        if shell == 'Bash':
+            result = subprocess.run(['bash', '-lc', 'type dir'], capture_output=True, text=True)
+        elif shell == 'Zsh':
+            result = subprocess.run(['zsh', '-ic', 'type dir'], capture_output=True, text=True)
+        else:
+            sys.stderr.write("Unknown shell. Please add the 'dir' function manually.\n")
+            return False
+        if result.stdout.startswith("dir is a function") or result.stdout.startswith("dir is a shell function"):
+            sys.stderr.write("The 'dir' function exists in your environment.\n")
+            return True
+        else:
+            sys.stderr.write("The 'dir' function does not exist. Follow these steps to add it:\n")
+            print_function_definition()
+            return False
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write("An error occurred while checking for the 'dir' function.\n")
+        sys.stderr.write("Error:", e)
+        sys.stderr.write("\n")
+        return False
+
+def print_instructions():
+    sys.stderr.write("1. Open your bash profile file in a text editor. This file could be ~/.bashrc or ~/.bash_profile.\n")
+    sys.stderr.write("2. Add the following function definition to the file:\n")
+    print_function_definition()
+    sys.stderr.write("\n3. Save the file and run 'source ~/.bashrc' or 'source ~/.bash_profile' to update your current shell environment.\n")
+
+def print_function_definition():
+    sys.stderr.write("""dir() {
+if [ $# -eq 0 ]; then
+    dirmarks --list
+    return
+fi
+OPT=$1;
+shift;
+case $OPT in
+        -l)
+        dirmarks --list
+        ;;
+        -h)
+        dirmarks --help
+        ;;
+        -d)
+        dirmarks --delete $1
+        ;;
+        -m)
+        dirmarks --add $1 $PWD
+        ;;
+        -u)
+        dirmarks --update $1 $2
+        ;;
+        -a)
+        dirmarks --add $1 $2
+        ;;
+        -p)
+        GO=$(dirmarks --get $1);
+        if [ "X$GO" != "X" ]; then
+                echo $GO;
+        fi
+        ;;
+        *)
+        GO=$(dirmarks --get $OPT);
+        if [ "X$GO" != "X" ]; then
+                cd $GO;
+        fi
+        ;;
+esac
+}
+""")
+
+
+
+
 def main():
     if len(sys.argv) == 1:
-        sys.stderr.write("Usage: python marks.py [list|mark|add|delete|update|get] [arguments]\n")
+        # Call the function to check
+        if check_dir_function_exists():
+            sys.stderr.write("Usage: python marks.py [list|mark|add|delete|update|get] [arguments]\n")
         return
 
     command = sys.argv[1]
@@ -118,8 +208,9 @@ dir -m <name> ------------- add mark for PWD
 dir -p <name> ------------- prints mark
 """)
     elif command == "--shell":
-        with open(os.join(f"{DATA_PATH}","dirmarks.function"), "r") as fb:
-            print(fb.readlines())
+        with open(os.path.join(f"{DATA_PATH}","dirmarks.function"), "r") as fb:
+            for line in fb.readlines():
+                print(line, end='')
     elif command == "--mark":
         shortname, path = sys.argv[2], os.path.abspath(".")
         Marks().add_mark(shortname, path)
