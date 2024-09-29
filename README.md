@@ -17,8 +17,7 @@ To enable the dir command for changing directories using bookmarks, add the foll
 dir() {
 if [ "$#" -eq 0 ]; then
     dirmarks list
-    exit $?
-fi
+else
 OPT=$1;
 shift;
 case $OPT in
@@ -53,6 +52,8 @@ case $OPT in
         fi
         ;;
 esac
+fi
+
 }
 ```
 
