@@ -29,8 +29,16 @@ class Marks:
             return
         if self.get_mark(key):
             return
+<<<<<<< HEAD
         with open(self.rc, "a") as file:
             file.write(f"{key}:{abs_path}\n")
+=======
+        try:
+            with open(self.rc, "a") as file:
+                file.write(f"{key}:{abs_path}\n")
+        except Exception as e:
+            pass  # Optionally, handle or log the error if needed
+>>>>>>> 048f07a (Improve add_mark method to handle path validation and error logging)
 
     def del_mark(self, key):
         path = None
