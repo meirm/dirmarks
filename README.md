@@ -1,59 +1,154 @@
 # Dirmarks
-Dirmarks is a directory bookmarking tool that allows you to easily manage, navigate, and switch between directories using bookmarks. This tool can save you time and make working with the command line more efficient.
+Dirmarks is a directory bookmarking tool that allows you to easily manage, navigate, and switch between directories using bookmarks with **categories and tags**. This tool can save you time and make working with the command line more efficient by organizing your bookmarks with color-coded categories and searchable tags.
 
+## ✨ Features
+
+- 📁 **Directory Bookmarking**: Quick navigation to frequently used directories
+- 🏷️ **Category Organization**: Group bookmarks by categories (work, personal, config, etc.)
+- 🔖 **Tag System**: Add multiple tags to bookmarks for flexible filtering
+- 🌈 **Color-Coded Display**: Categories and tags are displayed in distinctive colors
+- 📊 **Smart Discovery**: Commands to explore categories, tags, and statistics
+- 🔍 **Advanced Filtering**: Filter bookmarks by category or tag
+- 📂 **Hierarchical Categories**: Support for nested categories (work/web/frontend)
+- 🖥️ **Cross-Platform**: Works on Linux, macOS, and Windows
+- 🔄 **Backward Compatible**: Works with existing bookmark files
+- 🎨 **Terminal Detection**: Automatic color enable/disable based on terminal support
 
 ## Installation
-Install the Markdirs package using pip:
 
-```
+### From PyPI (Recommended)
+Install the dirmarks package using pip:
+
+```bash
 pip install dirmarks
+```
+
+### From Source (Development)
+Clone the repository and install using Poetry:
+
+```bash
+# Clone the repository
+git clone https://github.com/meirm/dirmarks.git
+cd dirmarks
+
+# Install with Poetry (recommended)
+poetry install
+
+# Or install with pip in development mode
+pip install -e .
+```
+
+For development with all test dependencies:
+
+```bash
+# Install including development dependencies
+poetry install --with dev
+
+# Run tests to verify installation
+python -m pytest
 ```
 
 ## Shell Function Setup
 To enable the dir command for changing directories using bookmarks, add the following shell function to your .profile, .bashrc, or .zshrc file, depending on your shell:
 
-```
+```bash
 #!/bin/bash
 dir() {
-if [ "$#" -eq 0 ]; then
-    dirmarks list
-else
+if [ $# -eq 0 ]; then
+    dirmarks --list
+    return
+fi
 OPT=$1;
 shift;
 case $OPT in
         -l)
-        dirmarks list
+        # Enhanced list with optional category/tag filtering
+        if [ "$1" = "--category" ] && [ -n "$2" ]; then
+            dirmarks --list --category "$2"
+        elif [ "$1" = "--tag" ] && [ -n "$2" ]; then
+            dirmarks --list --tag "$2"
+        else
+            dirmarks --list "$@"
+        fi
         ;;
         -h)
-        dirmarks help
+        dirmarks --help
         ;;
         -d)
-        dirmarks delete $1
+        dirmarks --delete $1
         ;;
         -m)
-        dirmarks add $1 $PWD
+        # Enhanced mark current directory with optional category/tags
+        if [ "$2" = "--category" ] && [ -n "$3" ]; then
+            if [ "$4" = "--tag" ] && [ -n "$5" ]; then
+                dirmarks --add $1 "$PWD" --category "$3" --tag "$5"
+            else
+                dirmarks --add $1 "$PWD" --category "$3"
+            fi
+        elif [ "$2" = "--tag" ] && [ -n "$3" ]; then
+            dirmarks --add $1 "$PWD" --tag "$3"
+        else
+            dirmarks --add $1 "$PWD"
+        fi
         ;;
         -u)
-        dirmarks update $1 $2
+        # Enhanced update with optional category/tags
+        local name="$1"
+        local path="$2"
+        shift 2
+        dirmarks --update "$name" "$path" "$@"
         ;;
         -a)
-        dirmarks add $1 $2
+        # Enhanced add with optional category/tags
+        local name="$1"
+        local path="$2"
+        shift 2
+        dirmarks --add "$name" "$path" "$@"
         ;;
         -p)
-        GO=`dirmarks get $1`;
+        GO=$(dirmarks --get $1);
         if [ "X$GO" != "X" ]; then
                 echo $GO;
         fi
         ;;
+        -c)
+        # List categories
+        dirmarks --categories
+        ;;
+        -t)
+        # List tags
+        dirmarks --tags
+        ;;
+        -s)
+        # Show statistics
+        dirmarks --stats
+        ;;
+        --category)
+        # List bookmarks by category
+        if [ -n "$1" ]; then
+            dirmarks --list --category "$1"
+        else
+            dirmarks --categories
+        fi
+        ;;
+        --tag)
+        # List bookmarks by tag
+        if [ -n "$1" ]; then
+            dirmarks --list --tag "$1"
+        else
+            dirmarks --tags
+        fi
+        ;;
+        --stats)
+        dirmarks --stats
+        ;;
         *)
-        GO=`dirmarks get $OPT`;
+        GO=$(dirmarks --get $OPT);
         if [ "X$GO" != "X" ]; then
-                cd $GO;
+                cd "$GO";
         fi
         ;;
 esac
-fi
-
 }
 ```
 
@@ -81,9 +176,10 @@ fi
 
 ## Usage:
 
+### Basic Commands
 ```
 dir -h   ------------------ prints this help
-dir -l	------------------ list marks
+dir -l	------------------ list marks (with colors!)
 dir <[0-9]+> -------------- dir to mark[x] where is x is the index
 dir <name> ---------------- dir to mark where key=<shortname>
 dir -a <name> <path> ------ add new mark
@@ -93,22 +189,111 @@ dir -m <name> ------------- add mark for PWD
 dir -p <name> ------------- prints mark
 ```
 
-## Usage example
-
+### Category and Tag Commands
 ```
-majam@dirose:~$ dir -l
-0 => meirm:/net/xen/mnt/sdb1/meirm
-1 => edonkey:/net/xen/mnt/sdb1/majam/aMule/Incoming
-2 => init:/etc/init.d
-3 => majam:/net/xen/mnt/sdb1/majam
+dir -c   ------------------ list all categories (with colors!)
+dir -t   ------------------ list all tags (with colors!)
+dir -s   ------------------ show bookmark statistics
+dir -l --category <cat> --- list bookmarks in category
+dir -l --tag <tag> -------- list bookmarks with tag
+dir --category <cat> ------ list bookmarks in category
+dir --tag <tag> ----------- list bookmarks with tag
+```
 
-majam@dirose:~$ dir 1
-majam@dirose:/net/xen/mnt/sdb1/majam/aMule/Incoming$ 
+### Enhanced Add/Update Commands
+```
+dir -a <name> <path> --category <cat> --tag <tag1,tag2>
+dir -u <name> <path> --category <cat> --tag <tag1,tag2>
+dir -m <name> --category <cat> --tag <tag1,tag2>
+```
 
-majam@dirose:/etc/init.d$ dir majam
-majam@dirose:/net/xen/mnt/sdb1/majam$ 
+## Usage Examples
 
-majam@dirose:~$ dir -d 2
-majam@dirose:~$
+### Basic Usage
+```bash
+$ dir -l
+0 => project1:/home/user/projects/webapp [category: work] [tags: urgent, frontend]
+1 => docs:/home/user/documents [category: personal] [tags: important]
+2 => config:/etc/nginx [category: config] [tags: production, critical]
+
+$ dir 1
+user@host:/home/user/documents$ 
+
+$ dir project1
+user@host:/home/user/projects/webapp$ 
+```
+
+### Category and Tag Organization
+```bash
+# Add bookmark with category and tags
+$ dir -a myproject /home/user/work/project --category work --tag urgent,frontend
+
+# List bookmarks by category (with colors!)
+$ dir -l --category work
+Bookmarks in category 'work':
+  myproject => /home/user/work/project [tags: urgent, frontend]
+  backend => /home/user/work/api [tags: production, backend]
+
+# List bookmarks by tag
+$ dir -l --tag urgent
+Bookmarks with tag 'urgent':
+  myproject => /home/user/work/project [category: work] [tags: frontend]
+  hotfix => /home/user/urgent/fix [category: work] [tags: critical]
+
+# Quick category/tag discovery
+$ dir -c
+Available categories:
+  work
+  personal
+  config
+
+$ dir -t  
+Available tags:
+  urgent
+  frontend
+  backend
+  production
+  critical
+
+$ dir -s
+Bookmark Statistics:
+========================================
+
+Categories (3):
+  work: 5 bookmarks
+  personal: 2 bookmarks
+  config: 1 bookmark
+
+Tags (5):
+  urgent: 2 bookmarks
+  frontend: 3 bookmarks
+  backend: 2 bookmarks
+  production: 4 bookmarks
+  critical: 1 bookmark
+```
+
+### Hierarchical Categories
+```bash
+# Create hierarchical categories
+$ dir -a webapp /var/www/html --category work/web/frontend --tag react,production
+$ dir -a api /var/www/api --category work/web/backend --tag node,production
+
+# List hierarchical categories
+$ dir -l --category work/web/frontend
+Bookmarks in category 'work/web/frontend':
+  webapp => /var/www/html [tags: react, production]
+```
+
+### Advanced Features
+```bash
+# Mark current directory with metadata
+$ cd /home/user/important-project
+$ dir -m important --category personal --tag priority,backup
+
+# Update existing bookmark with new category/tags
+$ dir -u oldproject /new/path --category work --tag updated,refactored
+
+# Color-coded output automatically adapts to your terminal
+# Categories and tags are displayed in different colors for easy identification
 ```
 
