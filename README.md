@@ -159,9 +159,9 @@ echo "source ~/.functions" >> ~/.bashrc
 ```
 ## Setup dirmarks for all users 
 
-```
+```bash
 mkdir -p /etc/bash.functions 
-cp data/marks.function /etc/bsh.fucntions
+cp dirmarks/data/dirmarks.function /etc/bash.functions/
 ```
 
 ### Append the following line in /etc/bash.bashrc
@@ -296,4 +296,125 @@ $ dir -u oldproject /new/path --category work --tag updated,refactored
 # Color-coded output automatically adapts to your terminal
 # Categories and tags are displayed in different colors for easy identification
 ```
+
+## Configuration
+
+### Color Customization
+Dirmarks automatically assigns colors to categories and tags. You can customize these colors by editing `~/.dirmarks_colors.json`:
+
+```json
+{
+  "categories": {
+    "work": "BLUE",
+    "personal": "GREEN",
+    "projects": "CYAN",
+    "important": "RED"
+  },
+  "tags": {
+    "urgent": "RED",
+    "production": "RED",
+    "development": "GREEN",
+    "testing": "MAGENTA"
+  }
+}
+```
+
+Available colors: `RED`, `GREEN`, `BLUE`, `CYAN`, `MAGENTA`, `YELLOW`, `WHITE`, `BLACK`, and their light variants (e.g., `LIGHTRED_EX`).
+
+### Disabling Colors
+To disable colors, set the `NO_COLOR` environment variable:
+
+```bash
+export NO_COLOR=1
+dirmarks --list  # Will display without colors
+```
+
+### Category Naming Rules
+Categories must follow these naming conventions:
+- Alphanumeric characters, hyphens, and underscores only
+- Forward slashes (/) for hierarchical categories
+- Examples: `work`, `work-projects`, `work/web/frontend`
+
+## Troubleshooting
+
+### Common Issues
+
+#### ValueError: too many values to unpack
+**Problem**: This error occurs when using an old version of dirmarks with bookmarks created by the enhanced version.
+
+**Solution**: Update to the latest version:
+```bash
+pip uninstall dirmarks
+pip install -e /path/to/dirmarks/repo
+```
+
+#### Colors not displaying
+**Problem**: Terminal doesn't support colors or colors are disabled.
+
+**Check**:
+- Ensure your terminal supports ANSI colors
+- Check if `NO_COLOR` environment variable is set
+- Verify terminal type: `echo $TERM`
+
+#### Bookmarks not persisting
+**Problem**: Bookmarks disappear after restart.
+
+**Check**:
+- Verify `~/.markrc` file exists and has proper permissions
+- Check if HOME environment variable is set correctly
+- Ensure write permissions in home directory
+
+#### Shell function not working
+**Problem**: `dir` command not recognized.
+
+**Solution**: Source the shell function:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+eval "$(dirmarks --shell)"
+# Then reload
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+## Advanced Usage
+
+### Python API
+You can also use dirmarks programmatically:
+
+```python
+from dirmarks.marks_enhanced import Marks
+
+# Create marks instance
+marks = Marks()
+
+# Add bookmark with metadata
+marks.add_mark_with_metadata('myproject', '/path/to/project', 
+                            category='work', tags=['urgent', 'frontend'])
+
+# List by category
+work_marks = marks.list_by_category('work')
+
+# List by tag
+urgent_marks = marks.list_by_tag('urgent')
+
+# Get statistics
+stats = marks.get_category_stats()
+```
+
+### File Format
+Bookmarks are stored in `~/.markrc` with backward-compatible format:
+```
+# Old format (still supported)
+bookmark_name:/path/to/directory
+
+# New format with metadata
+bookmark_name:/path/to/directory|category:work|tags:urgent,frontend
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For development setup, see the installation from source instructions above.
+
+## License
+
+MIT License - see LICENSE file for details.
 
