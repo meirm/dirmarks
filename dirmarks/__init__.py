@@ -1,4 +1,2 @@
-import pkg_resources
-
-DATA_PATH = pkg_resources.resource_filename('dirmarks', 'data/')
-
+from importlib.resources import files
+DATA_PATH = str(files("dirmarks") / "data")
