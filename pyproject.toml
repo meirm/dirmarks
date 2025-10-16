@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dirmarks"
-version = "0.1.8"
+version = "0.1.9"
 description = "Bookmarks for the filesystem"
 authors = ["Meir Michanie <meirm@cyborg.fi>"]
 license = "MIT"
